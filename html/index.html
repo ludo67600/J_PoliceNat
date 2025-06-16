@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Police Nationale</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app" v-cloak>
+	    <div class="tablet-frame" v-show="showApp"></div>
+
+    <div class="tablet-frame" v-show="showApp"></div>
+
+        <!-- Conteneur principal de l'application -->
+        <div class="app-container" v-show="showApp">
+            <!-- Entête de l'application -->
+            <header class="app-header">
+                <div class="header-logo">
+                    <img src="assets/police_logo.png" alt="Logo Police" />
+                    <h1>Police Nationale</h1>
+                </div>
+                <div class="status-badge" :class="isOnDuty ? 'status-on' : 'status-off'">
+                    {{ isOnDuty ? 'En service' : 'Hors service' }}
+                </div>
+                <div class="close-btn" @click="closeApp">
+                    <i class="fas fa-times"></i>
+                </div>
+            </header>
+
+            <!-- Navigation principale -->
+            <nav class="app-nav">
+                <div class="nav-item" 
+                     v-for="(section, index) in visibleSections" 
+                     :key="section.id"
+                     :class="{ active: activeSection === section.id }"
+                     @click="setActiveSection(section.id)">
+                    <i :class="section.icon"></i>
+                    <span>{{ section.name }}</span>
+                </div>
+            </nav>
+
+            <!-- Contenu principal de l'application -->
+            <main class="app-content">
+                <!-- Écran de service -->
+                <div class="content-section" v-if="activeSection === 'service'">
+                    <div class="section-header">
+                        <h2>Gestion du Service</h2>
+                    </div>
+                    <div class="service-card">
+                        <i class="fas fa-user-clock" :class="isOnDuty ? 'text-green' : 'text-red'"></i>
+                        <div class="service-info">
+                            <h3>Statut Actuel</h3>
+                            <p>{{ isOnDuty ? 'En service' : 'Hors service' }}</p>
+                        </div>
+                        <button class="action-btn" 
+                                :class="isOnDuty ? 'red-btn' : 'green-btn'"
+                                @click="toggleDuty">
+                            {{ isOnDuty ? 'Fin de service' : 'Prise de service' }}
+                        </button>
+                    </div>
+                    <div class="officer-info" v-if="isOnDuty">
+                        <div class="info-card">
+                            <i class="fas fa-id-badge"></i>
+                            <div>
+                                <h3>Matricule</h3>
+                                <p>{{ playerData.grade + '-' + playerData.id }}</p>
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <i class="fas fa-user-tie"></i>
+                            <div>
+                                <h3>Grade</h3>
+                                <p>{{ playerData.gradeName }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Nouvelle section des agents en service -->
+                    <div class="section-divider" v-if="isOnDuty">
+                        <h3>Collègues en service</h3>
+                    </div>
+                    <div class="officer-list" v-if="isOnDuty">
+                        <div v-if="onDutyOfficers.length === 0" class="empty-state">
+                            <i class="fas fa-users-slash"></i>
+                            <span>Aucun autre agent en service</span>
+                        </div>
+                        <div v-else class="officers-grid">
+                            <div class="officer-card" v-for="officer in onDutyOfficers" :key="officer.id">
+                                <i class="fas fa-user-police"></i>
+                                <div class="officer-card-info">
+                                    <h4>{{ officer.name }}</h4>
+                                    <p>{{ officer.gradeName }}</p>
+                                    <span class="officer-id">{{ officer.id }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Écran d'interactions citoyens -->
+                <div class="content-section" v-if="activeSection === 'citizens' && isOnDuty">
+                    <div class="section-header">
+                        <h2>Interactions Citoyens</h2>
+                    </div>
+                    <div class="action-grid">
+                        <div class="action-card" @click="executeAction('handcuff')">
+                            <i class="fas fa-handcuffs"></i>
+                            <span>Menotter/Démenotter</span>
+                        </div>
+                        <div class="action-card" @click="executeAction('escort')">
+                            <i class="fas fa-people-arrows"></i>
+                            <span>Escorter</span>
+                        </div>
+                        <div class="action-card" @click="executeAction('putInVehicle')">
+                            <i class="fas fa-car-side"></i>
+                            <span>Mettre dans le véhicule</span>
+                        </div>
+                        <div class="action-card" @click="executeAction('outOfVehicle')">
+                            <i class="fas fa-car"></i>
+                            <span>Sortir du véhicule</span>
+                        </div>
+                        <div class="action-card" @click="executeAction('search')">
+                            <i class="fas fa-search"></i>
+                            <span>Fouiller</span>
+                        </div>
+                        <div class="action-card" @click="executeAction('fine')">
+                            <i class="fas fa-money-bill"></i>
+                            <span>Amendes</span>
+                        </div>
+                        <div class="action-card" @click="executeAction('issueWeaponLicense')">
+                            <i class="fas fa-gun"></i>
+                            <span>Délivrer un permis d'arme</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Écran d'interactions véhicules -->
+                <div class="content-section" v-if="activeSection === 'vehicles' && isOnDuty">
+                    <div class="section-header">
+                        <h2>Interactions Véhicules</h2>
+                    </div>
+
+                    <!-- Affichage conditionnel selon qu'il y a des informations ou non -->
+                    <div v-if="!vehicleInfo && stolenVehicles.length === 0" class="action-grid">
+                        <div class="action-card" @click="executeAction('checkVehicle')">
+                            <i class="fas fa-magnifying-glass"></i>
+                            <span>Vérifier le véhicule</span>
+                        </div>
+                        <div class="action-card" @click="executeAction('impound')">
+                            <i class="fas fa-car-burst"></i>
+                            <span>Mise en fourrière</span>
+                        </div>
+                        <div class="action-card" @click="executeAction('unlock')">
+                            <i class="fas fa-unlock"></i>
+                            <span>Déverrouiller</span>
+                        </div>
+                        <div class="action-card" @click="executeAction('recoverVehicle')">
+                            <i class="fas fa-car-on"></i>
+                            <span>Marquer comme retrouvé</span>
+                        </div>
+                        <div class="action-card" @click="executeAction('stolenList')">
+                            <i class="fas fa-car-burst"></i>
+                            <span>Véhicules volés</span>
+                        </div>
+                    </div>
+
+                    <!-- Si des informations véhicule sont disponibles ou liste des véhicules volés -->
+                    <div v-else>
+                        <div class="tabs">
+                            <button :class="{ active: vehicleInfoTab === 'basic' }" @click="vehicleInfoTab = 'basic'" v-if="vehicleInfo">
+                                Informations Véhicule
+                            </button>
+                            <button :class="{ active: vehicleInfoTab === 'stolen' }" @click="vehicleInfoTab = 'stolen'" v-if="stolenVehicles.length > 0">
+                                Véhicules Volés
+                            </button>
+                        </div>
+                        
+                        <!-- Affichage des informations du véhicule -->
+                        <div v-if="vehicleInfoTab === 'basic' && vehicleInfo" class="vehicle-info-container">
+                            <div class="vehicle-info-header">
+                                <h3>Informations du véhicule</h3>
+                                <span class="vehicle-plate">{{ vehicleInfo.plate }}</span>
+                            </div>
+                            
+                            <div class="vehicle-info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Propriétaire</span>
+                                    <span class="info-value">{{ vehicleInfo.owner }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Modèle</span>
+                                    <span class="info-value">{{ vehicleInfo.model }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Statut</span>
+                                    <span class="info-value" :class="{ 'text-red': vehicleInfo.isStolen, 'text-green': !vehicleInfo.isStolen }">
+                                        {{ vehicleInfo.status }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div v-if="vehicleInfo.isStolen" class="button-group">
+                                <button class="action-btn green-btn" @click="markVehicleAsRecovered(vehicleInfo.plate)">
+                                    <i class="fas fa-car-on"></i> Marquer comme retrouvé
+                                </button>
+                            </div>
+                            
+                            <button class="refresh-btn" @click="vehicleInfo = null">
+                                <i class="fas fa-arrow-left"></i> Retour
+                            </button>
+                        </div>
+                        
+                        <!-- Affichage de la liste des véhicules volés -->
+                        <div v-if="vehicleInfoTab === 'stolen'" class="stolen-vehicles-container">
+                            <div v-if="stolenVehicles.length === 0" class="empty-state">
+                                <i class="fas fa-car-burst"></i>
+                                <span>Aucun véhicule signalé volé</span>
+                            </div>
+                            
+                            <div v-else class="stolen-vehicles-list">
+                                <div v-for="vehicle in stolenVehicles" :key="vehicle.plate" class="stolen-vehicle-card">
+                                    <div class="stolen-vehicle-header">
+                                        <span class="stolen-vehicle-model">{{ vehicle.model }}</span>
+                                        <span class="stolen-vehicle-plate">{{ vehicle.plate }}</span>
+                                    </div>
+                                    <div class="stolen-vehicle-details">
+                                        <div class="stolen-vehicle-info">
+                                            <i class="fas fa-user"></i>
+                                            <span>Propriétaire: {{ vehicle.owner }}</span>
+                                        </div>
+                                    </div>
+                                    <button class="action-btn green-btn recover-btn" @click="markVehicleAsRecovered(vehicle.plate)">
+                                        <i class="fas fa-car-on"></i> Marquer comme retrouvé
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <button class="refresh-btn" @click="stolenVehicles = []">
+                                <i class="fas fa-arrow-left"></i> Retour
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Écran des objets -->
+                <div class="content-section" v-if="activeSection === 'props' && isOnDuty">
+                    <div class="section-header">
+                        <h2>Gestion des Objets</h2>
+                    </div>
+                    <div class="action-grid">
+                        <div class="action-card" v-for="prop in availableProps" :key="prop.model" @click="placeProp(prop.model)">
+                            <i class="fas fa-box"></i>
+                            <span>{{ prop.label }}</span>
+                        </div>
+                        <div class="action-card" @click="executeAction('removeProp')">
+                            <i class="fas fa-trash"></i>
+                            <span>Supprimer un objet</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Écran K9 -->
+                <div class="content-section" v-if="activeSection === 'k9' && isOnDuty">
+                    <div class="section-header">
+                        <h2>Unité Canine K9</h2>
+                    </div>
+                    <div class="k9-status">
+                        <i class="fas fa-dog" :class="hasK9 ? 'text-green' : 'text-gray'"></i>
+                        <span>{{ hasK9 ? 'Chien déployé' : 'Chien non déployé' }}</span>
+                    </div>
+                   <div class="action-grid">
+                        <div class="action-card" @click="executeAction(hasK9 ? 'dismissK9' : 'spawnK9')">
+                            <i class="fas fa-dog" :class="{ 'dismiss-dog': hasK9 }"></i>
+                            <span>{{ hasK9 ? 'Renvoyer le chien' : 'Appeler le chien' }}</span>
+                        </div>
+                        <div v-if="hasK9" class="action-card" @click="executeAction('k9Sit')">
+                            <i class="fas fa-hand"></i>
+                            <span>Assis</span>
+                        </div>
+                        <div v-if="hasK9" class="action-card" @click="executeAction('k9Follow')">
+                            <i class="fas fa-person-walking"></i>
+                            <span>Suis-moi</span>
+                        </div>
+                        <div v-if="hasK9" class="action-card" @click="executeAction('k9Attack')">
+                            <i class="fas fa-skull"></i>
+                            <span>Attaque</span>
+                        </div>
+                        <div v-if="hasK9" class="action-card" @click="executeAction('k9Search')">
+                            <i class="fas fa-search"></i>
+                            <span>Cherche</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Écran Tenues -->
+                <div class="content-section" v-if="activeSection === 'clothing' && isOnDuty">
+                    <div class="section-header">
+                        <h2>Tenues de Service</h2>
+                    </div>
+                    <div class="uniform-section">
+                        <h3>Tenues complètes</h3>
+                        <div class="action-grid">
+                            <div class="action-card" @click="executeAction('civilianClothes')">
+                                <i class="fas fa-shirt"></i>
+                                <span>Tenue Civile</span>
+                            </div>
+                            <div class="action-card" @click="openUniformsMenu">
+                                <i class="fas fa-person-military-pointing"></i>  
+                                <span>Tenues de Service</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="uniform-section">
+                        <h3>Accessoires</h3>
+                        <div class="action-grid">
+                            <div class="action-card" @click="executeAction('helmets')">
+                                <i class="fas fa-helmet-safety"></i>
+                                <span>Casques/Coiffes</span>
+                            </div>
+                            <div class="action-card" @click="executeAction('vests')">
+                                <i class="fas fa-vest"></i>
+                                <span>Gilets</span>
+                            </div>
+                            <div class="action-card" @click="executeAction('bracelets')">
+                                <i class="fas fa-hand"></i>
+                                <span>Brassards</span>
+                            </div>
+                            <div class="action-card" @click="executeAction('removeAllAccessories')">
+                                <i class="fas fa-x"></i>
+                                <span>Retirer tout</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Écran Rendez-vous -->
+                <div class="content-section" v-if="activeSection === 'appointments' && isOnDuty">
+                    <div class="section-header">
+                        <h2>Gestion des Rendez-vous</h2>
+                    </div>
+                    <div class="appointment-filters">
+                        <button :class="{ active: appointmentFilter === 'all' }" @click="appointmentFilter = 'all'">Tous</button>
+                        <button :class="{ active: appointmentFilter === 'pending' }" @click="appointmentFilter = 'pending'">En attente</button>
+                        <button :class="{ active: appointmentFilter === 'accepted' }" @click="appointmentFilter = 'accepted'">Acceptés</button>
+                    </div>
+                    <div class="appointments-list">
+                        <div v-if="!appointments.length" class="empty-state">
+                            <i class="fas fa-calendar-xmark"></i>
+                            <span>Aucun rendez-vous à afficher</span>
+                        </div>
+                        <div v-for="appointment in filteredAppointments" 
+                             :key="appointment.id" 
+                             class="appointment-card"
+                             :class="appointmentStatusClass(appointment.status)"
+                             @click="selectAppointment(appointment)">
+                            <div class="appointment-header">
+                                <span class="appointment-subject">{{ appointment.subject }}</span>
+                                <span class="appointment-status">{{ appointment.status }}</span>
+                            </div>
+                            <div class="appointment-details">
+                                <div class="appointment-info">
+                                    <i class="fas fa-user"></i>
+                                    <span>{{ appointment.citizen_name }}</span>
+                                </div>
+                                <div class="appointment-info">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>{{ appointment.date }} à {{ appointment.time }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="refresh-btn" @click="refreshAppointments">
+                        <i class="fas fa-sync"></i> Actualiser
+                    </button>
+                </div>
+
+                <!-- Écran Casier Judiciaire -->
+                <div class="content-section" v-if="activeSection === 'records' && isOnDuty">
+                    <div class="section-header">
+                        <h2>Casier Judiciaire</h2>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" v-model="criminalSearch" placeholder="Numéro de carte d'identité (ex: ID-123456)">
+                        <button @click="searchCriminalRecords">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div v-if="selectedCitizen" class="citizen-details">
+                        <div class="citizen-header">
+                            <h3>{{ selectedCitizen.firstname }} {{ selectedCitizen.lastname }}</h3>
+                            <span class="citizen-id">{{ selectedCitizen.identifier }}</span>
+                        </div>
+                        
+                        <!-- Section d'affichage du mugshot -->
+                        <div class="citizen-mugshot-container">
+                            <div v-if="citizenHasMugshot" class="mugshot-display">
+                                <img :src="selectedCitizen.mugshot" alt="Photo d'identification">
+                            </div>
+                            <div v-else class="mugshot-placeholder">
+                                <i class="fas fa-user"></i>
+                                <button class="add-mugshot-btn" @click="openGalleryModal">
+                                    <i class="fas fa-camera"></i> Ajouter une photo
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="citizen-info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Date de naissance</span>
+                                <span class="info-value">{{ selectedCitizen.dateofbirth }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Sexe</span>
+                                <span class="info-value">{{ selectedCitizen.sex === 'm' ? 'Masculin' : 'Féminin' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Taille</span>
+                                <span class="info-value">{{ selectedCitizen.height }} cm</span>
+                            </div>
+                        </div>
+                        <div class="tabs">
+                            <button :class="{ active: criminalTab === 'records' }" @click="criminalTab = 'records'">Infractions</button>
+                            <button :class="{ active: criminalTab === 'documents' }" @click="criminalTab = 'documents'">Documents</button>
+                        </div>
+                        <div v-if="criminalTab === 'records'" class="criminal-records">
+                            <div v-if="!criminalRecords.length" class="empty-state">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Casier judiciaire vierge</span>
+                            </div>
+                            <div v-for="record in criminalRecords" :key="record.id" class="record-card">
+                                <div class="record-header">
+                                    <span class="record-offense">{{ record.offense }}</span>
+                                    <span class="record-date">{{ record.date }}</span>
+                                </div>
+                                <div class="record-details">
+                                    <div class="record-info">
+                                        <span class="info-label">Amende</span>
+                                        <span class="info-value">€{{ record.fineAmount }}</span>
+                                    </div>
+                                    <div class="record-info">
+                                        <span class="info-label">Peine</span>
+                                        <span class="info-value">{{ record.jailTime }} min</span>
+                                    </div>
+                                    <div class="record-info">
+                                        <span class="info-label">Agent</span>
+                                        <span class="info-value">{{ record.officerName }}</span>
+                                    </div>
+                                </div>
+                                <div v-if="record.notes" class="record-notes">
+                                    <span class="info-label">Notes</span>
+                                    <p>{{ record.notes }}</p>
+                                </div>
+                                <button v-if="playerData.grade >= 9" class="delete-btn" @click="deleteRecord(record.id)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <button class="action-btn green-btn add-record-btn" @click="openAddRecordForm">
+                                <i class="fas fa-plus"></i> Ajouter une infraction
+                            </button>
+                        </div>
+                        <div v-if="criminalTab === 'documents'" class="documents-list">
+                            <div v-if="!documents.length" class="empty-state">
+                                <i class="fas fa-id-card"></i>
+                                <span>Aucun document</span>
+                            </div>
+                            <div v-for="doc in documents" :key="doc.id" class="document-card" 
+                                :class="{ 'expired': doc.isExpired }">
+                                <div class="document-header">
+                                    <span class="document-type">{{ getDocumentTypeName(doc.type) }}</span>
+                                    <span class="document-status" :class="doc.isExpired ? 'status-expired' : 'status-valid'">
+                                        {{ doc.isExpired ? 'Expiré' : 'Valide' }}
+                                    </span>
+                                </div>
+                                <div class="document-details">
+                                    <div class="document-info">
+                                        <span class="info-label">Numéro</span>
+                                        <span class="info-value">{{ doc.number }}</span>
+                                    </div>
+                                    <div class="document-info">
+                                        <span class="info-label">Émission</span>
+                                        <span class="info-value">{{ doc.issueDate }}</span>
+                                    </div>
+                                    <div class="document-info">
+                                        <span class="info-label">Expiration</span>
+                                        <span class="info-value">{{ doc.expirationDate }}</span>
+                                    </div>
+                                    <div class="document-info">
+                                        <span class="info-label">Délivré par</span>
+                                        <span class="info-value">{{ doc.issuer }}</span>
+                                    </div>
+                                </div>
+                                <!-- Bouton de révocation -->
+                                <div v-if="!doc.isExpired && (doc.type === 'Driver' || doc.type === 'Weapon')" class="document-actions">
+                                    <button class="action-btn red-btn" @click="revokeDocument(doc.type, selectedCitizen.identifier)">
+                                        <i class="fas fa-ban"></i> Révoquer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Écran Plaintes -->
+                <div class="content-section" v-if="activeSection === 'complaints' && isOnDuty">
+                    <div class="section-header">
+                        <h2>Gestion des Plaintes</h2>
+                    </div>
+                    <div class="tab-buttons">
+                        <button :class="{ active: complaintsTab === 'list' }" @click="complaintsTab = 'list'">Liste</button>
+                        <button :class="{ active: complaintsTab === 'new' }" @click="complaintsTab = 'new'">Nouvelle plainte</button>
+                    </div>
+                    
+                    <div v-if="complaintsTab === 'list'" class="complaints-list">
+                        <div class="complaint-filters">
+                            <button :class="{ active: complaintFilter === 'all' }" @click="complaintFilter = 'all'">Toutes</button>
+                            <button :class="{ active: complaintFilter === 'open' }" @click="complaintFilter = 'open'">Ouvertes</button>
+                            <button :class="{ active: complaintFilter === 'closed' }" @click="complaintFilter = 'closed'">Fermées</button>
+                        </div>
+                        <div v-if="!complaints.length" class="empty-state">
+                            <i class="fas fa-file-circle-xmark"></i>
+                            <span>Aucune plainte à afficher</span>
+                        </div>
+                        <div v-for="complaint in filteredComplaints" 
+                             :key="complaint.id" 
+                             class="complaint-card"
+                             :class="{ 'closed': complaint.status === 'Fermé' }"
+                             @click="selectComplaint(complaint)">
+                            <div class="complaint-header">
+                                <span class="complaint-type">{{ complaint.type }}</span>
+                                <span class="complaint-status" :class="complaint.status === 'Ouvert' ? 'status-open' : 'status-closed'">
+                                    {{ complaint.status }}
+                                </span>
+                            </div>
+                            <div class="complaint-details">
+                                <div class="complaint-info">
+                                    <i class="fas fa-user"></i>
+                                    <span>{{ complaint.plaintiff }}</span>
+                                </div>
+                                <div class="complaint-info">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>{{ complaint.date }}</span>
+                                </div>
+                                <div class="complaint-info">
+                                    <i class="fas fa-user-police"></i>
+                                    <span>{{ complaint.officer_name || 'Non assigné' }}</span>
+                                </div>
+                            </div>
+                            <div class="complaint-description">
+                                <p>{{ truncateText(complaint.description, 100) }}</p>
+                            </div>
+                        </div>
+                        <button class="refresh-btn" @click="refreshComplaints">
+                            <i class="fas fa-sync"></i> Actualiser
+                        </button>
+                    </div>
+                    
+                    <div v-if="complaintsTab === 'new'" class="new-complaint-form">
+                        <div class="form-group">
+                            <label>Type de plainte</label>
+                            <select v-model="newComplaint.type">
+                                <option v-for="category in complaintCategories" :key="category.value" :value="category.value">
+                                    {{ category.label }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nom du plaignant</label>
+                            <input type="text" v-model="newComplaint.plaintiff" placeholder="Prénom et nom">
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea v-model="newComplaint.description" placeholder="Détails de la plainte"></textarea>
+                        </div>
+                        <button class="action-btn green-btn" @click="submitComplaint">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Écran alertes -->
+                <div class="content-section" v-if="activeSection === 'alerts' && isOnDuty">
+                    <div class="section-header">
+                        <h2>Alertes Radio</h2>
+                    </div>
+                    <div class="alerts-list">
+                        <div class="alert-card" 
+                             v-for="code in alertCodes" 
+                             :key="code.code"
+                             :class="code.color"
+                             @click="sendAlert(code.code)">
+                            <div class="alert-code">{{ code.code }}</div>
+                            <div class="alert-label">{{ code.label }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Écran boss (si grade suffisant) -->
+                <div class="content-section" v-if="activeSection === 'boss' && isOnDuty && playerData.grade >= 10">
+                    <div class="section-header">
+                        <h2>Gestion Entreprise</h2>
+                    </div>
+                    <div class="action-grid">
+                        <div class="action-card" @click="executeAction('bossMenu')">
+                            <i class="fas fa-building"></i>
+                            <span>Menu Boss</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Modals -->
+        <div class="modal" v-if="showModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>{{ modalTitle }}</h3>
+					<button class="close-modal" @click="closeModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Le contenu du modal change selon le type -->
+                    <div v-if="modalType === 'appointmentDetails'" class="appointment-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Sujet</span>
+                            <span class="detail-value">{{ selectedAppointment.subject }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Citoyen</span>
+                            <span class="detail-value">{{ selectedAppointment.citizen_name }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Date et heure</span>
+                            <span class="detail-value">{{ selectedAppointment.date }} à {{ selectedAppointment.time }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Statut</span>
+                            <span class="detail-value">{{ selectedAppointment.status }}</span>
+                        </div>
+                        <div class="detail-item full-width">
+                            <span class="detail-label">Description</span>
+                            <p class="detail-value">{{ selectedAppointment.description }}</p>
+                        </div>
+                        <div class="button-group">
+                            <button v-if="selectedAppointment.status === 'En attente'" 
+                                    class="action-btn green-btn" 
+                                    @click="acceptAppointment(selectedAppointment.id)">
+                                <i class="fas fa-check"></i> Accepter
+                            </button>
+                            <button v-if="selectedAppointment.status === 'Accepté'" 
+                                    class="action-btn green-btn" 
+                                    @click="finishAppointment(selectedAppointment.id)">
+                                <i class="fas fa-check-double"></i> Terminer
+                            </button>
+                            <button v-if="selectedAppointment.status === 'En attente' || selectedAppointment.status === 'Accepté'" 
+                                    class="action-btn red-btn" 
+                                    @click="cancelAppointment(selectedAppointment.id)">
+                                <i class="fas fa-times"></i> Annuler
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-if="modalType === 'complaintDetails'" class="complaint-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Type</span>
+                            <span class="detail-value">{{ selectedComplaint.type }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Plaignant</span>
+                            <span class="detail-value">{{ selectedComplaint.plaintiff }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Date</span>
+                            <span class="detail-value">{{ selectedComplaint.date }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Statut</span>
+                            <span class="detail-value">{{ selectedComplaint.status }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Agent</span>
+                            <span class="detail-value">{{ selectedComplaint.officer_name || 'Non assigné' }}</span>
+                        </div>
+                        <div class="detail-item full-width">
+                            <span class="detail-label">Description</span>
+                            <p class="detail-value">{{ selectedComplaint.description }}</p>
+                        </div>
+                        <div v-if="selectedComplaint.status === 'Ouvert'" class="form-group">
+                            <label>Rapport de clôture</label>
+                            <textarea v-model="complaintCloseReason" placeholder="Rapport de clôture"></textarea>
+                        </div>
+                        <div class="button-group">
+                            <button v-if="selectedComplaint.status === 'Ouvert'" 
+                                    class="action-btn green-btn" 
+                                    @click="closeComplaint(selectedComplaint.id)">
+                                <i class="fas fa-check"></i> Clôturer
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-if="modalType === 'addRecord'" class="add-record-form">
+                        <div class="form-group">
+                            <label>Infraction</label>
+                            <input type="text" v-model="newRecord.offense" placeholder="Nature de l'infraction">
+                        </div>
+                        <div class="form-group">
+                            <label>Montant de l'amende (€)</label>
+                            <input type="number" v-model="newRecord.fineAmount" min="0" max="100000">
+                        </div>
+                        <div class="form-group">
+                            <label>Durée d'emprisonnement (minutes)</label>
+                            <input type="number" v-model="newRecord.jailTime" min="0" max="1000">
+                        </div>
+                        <div class="form-group">
+                            <label>Notes</label>
+                            <textarea v-model="newRecord.notes" placeholder="Informations supplémentaires"></textarea>
+                        </div>
+                        <div class="button-group">
+                            <button class="action-btn green-btn" @click="submitNewRecord">
+                                <i class="fas fa-save"></i> Enregistrer
+                            </button>
+                            <button class="action-btn red-btn" @click="closeModal">
+                                <i class="fas fa-times"></i> Annuler
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Modal de galerie pour les photos d'identification -->
+                    <div v-if="modalType === 'gallery'" class="gallery-modal">
+                        <div v-if="loadingGallery" class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Chargement des photos...</p>
+                        </div>
+                        <div v-else-if="galleryPhotos.length === 0" class="empty-gallery">
+                            <i class="fas fa-images"></i>
+                            <p>Aucune photo disponible dans votre galerie</p>
+                        </div>
+                        <div v-else class="gallery-grid">
+                            <div v-for="photo in galleryPhotos" 
+                                 :key="photo.id" 
+                                 class="gallery-item"
+                                 @click="selectPhotoAsMugshot(photo)">
+                                <div class="gallery-img-container">
+                                    <img :src="photo.image_url" alt="Photo">
+                                </div>
+                                <div class="gallery-photo-info">
+                                    <span class="gallery-photo-date">{{ formatPhotoDate(photo.created_at) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="modalType === 'uniforms'" class="uniforms-list">
+                        <div v-for="uniform in availableUniforms" 
+                             :key="uniform.label" 
+                             class="uniform-item"
+                             @click="applyUniform(uniform)">
+                            <i class="fas fa-user-police"></i>
+                            <span>{{ uniform.label }}</span>
+                        </div>
+                    </div>
+
+                    <div v-if="modalType === 'accessories'" class="accessories-list">
+                        <div class="accessory-item remove-item" @click="removeAccessory(currentAccessoryType)">
+                            <i class="fas fa-times"></i>
+                            <span>Retirer</span>
+                        </div>
+                        <div v-for="accessory in availableAccessories" 
+                             :key="accessory.label" 
+                             class="accessory-item"
+                             @click="applyAccessory(currentAccessoryType, accessory)">
+                            <i class="fas fa-plus"></i>
+                            <span>{{ accessory.label }}</span>
+                        </div>
+                    </div>
+
+                    <div v-if="modalType === 'fines'" class="fines-categories">
+                        <div v-for="category in fineCategories" 
+                             :key="category.label" 
+                             class="fine-category"
+                             @click="selectFineCategory(category)">
+                            <span class="category-label">{{ category.label }}</span>
+                            <span class="category-range">€{{ category.minAmount }} - €{{ category.maxAmount }}</span>
+                        </div>
+                    </div>
+
+                    <div v-if="modalType === 'fineDetails'" class="fine-details-form">
+                        <div class="form-group">
+                            <label>Montant (€)</label>
+                            <input type="number" v-model="newFine.amount" :min="selectedFineCategory.minAmount" :max="selectedFineCategory.maxAmount">
+                        </div>
+                        <div class="form-group">
+                            <label>Motif</label>
+                            <textarea v-model="newFine.reason" placeholder="Motif de l'amende"></textarea>
+                        </div>
+                        <div class="button-group">
+                            <button class="action-btn green-btn" @click="submitFine">
+                                <i class="fas fa-money-bill"></i> Valider
+                            </button>
+                            <button class="action-btn red-btn" @click="closeModal">
+                                <i class="fas fa-times"></i> Annuler
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Modal confirmation fourrière -->
+                    <div v-if="modalType === 'impoundConfirm'" class="impound-confirm">
+                        <p>Voulez-vous mettre ce véhicule en fourrière ?</p>
+                        <div v-if="impoundData" class="impound-data">
+                            <p>Plaque: {{ impoundData.plate }}</p>
+                        </div>
+                        <div class="button-group">
+                            <button class="action-btn green-btn" @click="confirmImpound">
+                                <i class="fas fa-check"></i> Confirmer
+                            </button>
+                            <button class="action-btn red-btn" @click="closeModal">
+                                <i class="fas fa-times"></i> Annuler
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="notifications-container">
+            <div v-for="(notification, index) in notifications" 
+                 :key="index" 
+                 class="notification"
+                 :class="notification.type">
+                <i :class="notificationIcon(notification.type)"></i>
+                <div class="notification-content">
+                    <div class="notification-title">{{ notification.title }}</div>
+                    <div class="notification-message">{{ notification.message }}</div>
+                </div>
+                <button class="notification-close" @click="removeNotification(index)">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

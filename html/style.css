@@ -1,0 +1,1344 @@
+/* Police Nationale - style.css */
+
+/* === Import de polices === */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* === Variables globales === */
+:root {
+   /* Couleurs principales */
+   --primary-color: #1a3a85;  /* Bleu actuel conservé pour les accents */
+   --primary-dark: #0d2761;   /* Bleu plus foncé conservé */
+   --primary-light: #3c59b0;  /* Bleu plus clair conservé */
+   --secondary-color: #bf3131;
+   --text-color: #f5f7fa;     /* Changé en clair pour le fond foncé */
+   --text-light: #ffffff;
+   --background-color: #102048; /* Nouveau fond bleu foncé */
+   --card-color: #ffffff;     /* Cards restent blanches */
+   --border-color: #e1e5e9;
+
+   
+   /* Couleurs d'état */
+   --success-color: #28a745;
+   --warning-color: #ffc107;
+   --error-color: #dc3545;
+   --info-color: #17a2b8;
+   
+   /* Espacements */
+   --spacing-xs: 4px;
+   --spacing-sm: 8px;
+   --spacing-md: 16px;
+   --spacing-lg: 24px;
+   --spacing-xl: 32px;
+   
+   /* Ombres */
+   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
+   --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.16);
+   
+   /* Rayons de bordure */
+   --radius-sm: 4px;
+   --radius-md: 8px;
+   --radius-lg: 12px;
+   
+   /* Transitions */
+   --transition-fast: 0.15s ease;
+   --transition-normal: 0.3s ease;
+   --transition-slow: 0.5s ease;
+   
+   /* Z-index */
+   --z-base: 0;
+   --z-overlay: 10;
+   --z-dropdown: 20;
+   --z-modal: 30;
+   --z-toast: 40;
+}
+
+/* === Reset === */
+* {
+   margin: 0;
+   padding: 0;
+   box-sizing: border-box;
+   font-family: 'Roboto', sans-serif;
+}
+
+
+
+body, html {
+   width: 100%;
+   height: 100%;
+   overflow: hidden;
+   background-color: transparent;
+   color: var(--text-color);
+}
+
+/* === Styles généraux === */
+[v-cloak] {
+   display: none;
+}
+
+button {
+   cursor: pointer;
+   border: none;
+   background-color: transparent;
+   transition: var(--transition-fast);
+}
+
+button:hover {
+   opacity: 0.9;
+}
+
+button:active {
+   transform: scale(0.98);
+}
+
+.action-btn {
+   padding: var(--spacing-sm) var(--spacing-lg);
+   border-radius: var(--radius-md);
+   background-color: var(--primary-color);
+   color: var(--text-light);
+   font-weight: 500;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: var(--spacing-sm);
+   transition: var(--transition-normal);
+}
+
+.action-btn:hover {
+   background-color: var(--primary-dark);
+}
+
+.green-btn {
+   background-color: var(--success-color);
+}
+
+.green-btn:hover {
+   background-color: #218838;
+}
+
+.red-btn {
+   background-color: var(--error-color);
+}
+
+.red-btn:hover {
+   background-color: #c82333;
+}
+
+.refresh-btn {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: var(--spacing-sm);
+   padding: var(--spacing-sm) var(--spacing-lg);
+   border-radius: var(--radius-md);
+   background-color: var(--primary-light);
+   color: var(--text-light);
+   margin: var(--spacing-md) auto;
+   font-weight: 500;
+}
+
+.refresh-btn i {
+   font-size: 14px;
+}
+
+.empty-state {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   padding: var(--spacing-xl);
+   color: #9ba4ae;
+   text-align: center;
+}
+
+.empty-state i {
+   font-size: 48px;
+   margin-bottom: var(--spacing-md);
+}
+
+.text-green {
+   color: var(--success-color);
+}
+
+.text-red {
+   color: var(--error-color);
+}
+
+.text-blue {
+    color: var(--primary-color);
+}
+
+.text-gray {
+   color: #9ba4ae;
+}
+
+/* Couleur rouge pour l'icône du chien à renvoyer */
+.dismiss-dog {
+    color: var(--error-color) !important;
+}
+
+/* Styles pour le cadre de la tablette */
+.tablet-frame {
+    position: fixed;
+    top: 60%;
+    left: 50%;
+    width: 63vw;
+    height: 85vw;
+    transform: translate(-50%, -50%);
+    background-image: url('assets/tablet-frame.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* === Conteneur principal de l'application === */
+.app-container {
+    position: absolute;
+    width: 70vw; /* Légèrement réduit pour s'adapter à l'intérieur de la coque */
+    max-width: 1100px; /* Ajusté si nécessaire */
+    height: 75vh; /* Ajusté pour s'adapter à l'intérieur de la coque */
+    left: 50%;
+    top: 60%;
+    transform: translate(-50%, -50%);
+    background-color: var(--background-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+	z-index: 999; 
+}
+
+/* === Entête de l'application === */
+.app-header {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   padding: var(--spacing-md) var(--spacing-xl);
+   background-color: var(--card-color); /* Fond blanc pour le bandeau */
+   color: var(--primary-color); /* Texte bleu pour contraster avec fond blanc */
+
+}
+
+.header-logo {
+   display: flex;
+   align-items: center;
+   gap: var(--spacing-md);
+}
+
+.header-logo img {
+   height: 40px;
+   width: auto;
+}
+
+.header-logo h1 {
+   font-size: 20px;
+   font-weight: 600;
+   font-family: 'Poppins', sans-serif;
+      color: var(--primary-color); /* Texte bleu */
+
+}
+
+.status-badge {
+   padding: var(--spacing-xs) var(--spacing-md);
+   border-radius: var(--radius-sm);
+   font-size: 14px;
+   font-weight: 500;
+}
+
+.status-on {
+   background-color: var(--success-color);
+}
+
+.status-off {
+   background-color: var(--error-color);
+}
+
+.close-btn {
+   width: 32px;
+   height: 32px;
+   border-radius: 50%;
+   background-color: rgba(255, 255, 255, 0.1);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   cursor: pointer;
+   transition: var(--transition-fast);
+}
+
+.close-btn:hover {
+   background-color: rgba(255, 255, 255, 0.2);
+}
+
+.close-btn i {
+   font-size: 18px;
+}
+
+/* === Navigation === */
+.app-nav {
+    display: flex;
+    align-items: center;
+    padding: 0 var(--spacing-md);
+    background-color: #1a3a85; /* Bleu légèrement plus clair que le fond */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.app-nav::-webkit-scrollbar {
+   display: none; /* Chrome, Safari, Opera */
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: var(--transition-normal);
+    white-space: nowrap;
+    font-size: 0.9rem; /* Réduire légèrement la taille des textes */
+	color: var(--text-light); /* Texte blanc pour la navigation */
+
+}
+
+.nav-item.active {
+   border-bottom-color: var(--text-light);
+   color: var(--text-light);
+   font-weight: 500;
+}
+
+.nav-item:hover {
+   background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* === Contenu principal === */
+.app-content {
+   flex: 1;
+   overflow-y: auto;
+   padding: var(--spacing-md);
+}
+
+.content-section {
+   height: 100%;
+   display: flex;
+   flex-direction: column;
+}
+
+.section-header {
+   margin-bottom: var(--spacing-md);
+   padding-bottom: var(--spacing-md);
+   border-bottom: 1px solid var(--border-color);
+}
+
+.section-header h2 {
+   font-size: 18px;
+   font-weight: 600;
+   color: var(--text-light); /* Texte blanc pour les titres */
+}
+
+/* === Section Service === */
+.service-card {
+   background-color: var(--card-color);
+   border-radius: var(--radius-md);
+   padding: var(--spacing-lg);
+   box-shadow: var(--shadow-sm);
+   display: flex;
+   align-items: center;
+   margin-bottom: var(--spacing-lg);
+   color: var(--primary-color);
+
+}
+
+.service-card i {
+   font-size: 48px;
+   margin-right: var(--spacing-md);
+}
+
+.service-info {
+   flex: 1;
+}
+
+.service-info h3 {
+   font-size: 18px;
+   margin-bottom: var(--spacing-xs);
+}
+
+.officer-info {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+   gap: var(--spacing-md);
+   margin-top: var(--spacing-lg);
+}
+
+.info-card {
+   background-color: var(--card-color);
+   border-radius: var(--radius-md);
+   padding: var(--spacing-md);
+   box-shadow: var(--shadow-sm);
+   display: flex;
+   align-items: center;
+   color: var(--primary-color);
+
+}
+
+.info-card i {
+   font-size: 24px;
+   margin-right: var(--spacing-md);
+   color: var(--primary-color);
+}
+
+.info-card h3 {
+   font-size: 14px;
+   margin-bottom: var(--spacing-xs);
+   color: #666;
+}
+
+.info-card p {
+   font-weight: 500;
+}
+
+/* === Section divider === */
+.section-divider {
+   margin: var(--spacing-lg) 0 var(--spacing-md);
+   padding-bottom: var(--spacing-xs);
+   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.section-divider h3 {
+   font-size: 16px;
+   font-weight: 600;
+   color: var(--text-light); /* Texte blanc */
+}
+
+/* === Officers list === */
+.officers-grid {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+   gap: var(--spacing-md);
+   margin-top: var(--spacing-md);
+}
+
+.officer-card {
+   background-color: var(--card-color);
+   border-radius: var(--radius-md);
+   padding: var(--spacing-md);
+   box-shadow: var(--shadow-sm);
+   display: flex;
+   align-items: center;
+   gap: var(--spacing-md);
+   color: var(--primary-color);
+
+}
+
+.officer-card i {
+   font-size: 24px;
+   color: var(--primary-color);
+   background-color: rgba(26, 58, 133, 0.1);
+   width: 42px;
+   height: 42px;
+   border-radius: 50%;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+.officer-card-info {
+   flex: 1;
+}
+
+.officer-card-info h4 {
+   font-size: 15px;
+   font-weight: 600;
+   margin-bottom: 2px;
+}
+
+.officer-card-info p {
+   font-size: 13px;
+   color: #666;
+}
+
+.officer-id {
+   font-size: 12px;
+   color: #999;
+   background-color: rgba(0, 0, 0, 0.05);
+   padding: 1px 5px;
+   border-radius: 3px;
+}
+
+/* === Grille d'actions === */
+.action-grid {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+   gap: var(--spacing-md);
+}
+
+.action-card {
+   background-color: var(--card-color);
+   border-radius: var(--radius-md);
+   padding: var(--spacing-lg) var(--spacing-md);
+   box-shadow: var(--shadow-sm);
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   text-align: center;
+   cursor: pointer;
+   transition: var(--transition-normal);
+   gap: var(--spacing-md);
+   color: var(--primary-color);
+
+}
+
+.action-card:hover {
+   transform: translateY(-3px);
+   box-shadow: var(--shadow-md);
+}
+
+.action-card i {
+   font-size: 24px;
+   color: var(--primary-color);
+}
+
+.action-card span {
+   font-size: 14px;
+   font-weight: 500;
+   color: var(--primary-color); 
+}
+
+/* === Section K9 === */
+.k9-status {
+   background-color: var(--card-color);
+   border-radius: var(--radius-md);
+   padding: var(--spacing-md);
+   box-shadow: var(--shadow-sm);
+   display: flex;
+   align-items: center;
+   gap: var(--spacing-md);
+   margin-bottom: var(--spacing-lg);
+}
+
+.k9-status i {
+   font-size: 24px;
+}
+
+.k9-status span {
+   font-weight: 500;
+   color: var(--primary-color);
+}
+
+/* === Section Tenues === */
+.uniform-section {
+   margin-bottom: var(--spacing-xl);
+}
+
+.uniform-section h3 {
+   font-size: 16px;
+   margin-bottom: var(--spacing-md);
+   color: var(--primary-color);
+}
+
+/* === Section Rendez-vous === */
+.appointment-filters, .complaint-filters {
+   display: flex;
+   gap: var(--spacing-sm);
+   margin-bottom: var(--spacing-md);
+}
+
+.appointment-filters button, .complaint-filters button, .tab-buttons button {
+   padding: var(--spacing-xs) var(--spacing-md);
+   border-radius: var(--radius-md);
+   background-color: var(--card-color);
+   border: 1px solid var(--border-color);
+}
+
+.appointment-filters button.active, .complaint-filters button.active, .tab-buttons button.active {
+   background-color: var(--primary-color);
+   color: var(--text-light);
+   border-color: var(--primary-color);
+}
+
+.appointments-list, .complaints-list, .documents-list, .criminal-records {
+   display: flex;
+   flex-direction: column;
+   gap: var(--spacing-md);
+   max-height: 60vh;
+   overflow-y: auto;
+   padding-right: var(--spacing-sm);
+}
+
+.appointment-card, .complaint-card, .document-card, .record-card {
+   background-color: var(--card-color);
+   border-radius: var(--radius-md);
+   padding: var(--spacing-md);
+   box-shadow: var(--shadow-sm);
+   border-left: 4px solid var(--primary-color);
+   cursor: pointer;
+   transition: var(--transition-normal);
+   color: var(--primary-color);
+
+}
+
+.appointment-card:hover, .complaint-card:hover {
+   transform: translateX(3px);
+   box-shadow: var(--shadow-md);
+}
+
+.appointment-header, .complaint-header, .document-header, .record-header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-bottom: var(--spacing-sm);
+}
+
+.appointment-subject, .complaint-type, .document-type, .record-offense, .citizen-header h3 {
+   font-weight: 600;
+   color: var(--primary-color);
+
+}
+
+.appointment-status, .complaint-status, .document-status {
+   font-size: 12px;
+   padding: 2px 8px;
+   border-radius: var(--radius-sm);
+   background-color: var(--background-color);
+}
+
+.status-pending, .status-open {
+   color: var(--warning-color);
+}
+
+.status-accepted {
+   color: var(--info-color);
+}
+
+.status-completed, .status-valid {
+   color: var(--success-color);
+}
+
+.status-cancelled, .status-closed, .status-expired {
+   color: var(--error-color);
+}
+
+.document-card.expired {
+   border-left-color: var(--error-color);
+}
+
+.appointment-details, .complaint-details, .document-details, .record-details {
+   display: flex;
+   flex-direction: column;
+   gap: var(--spacing-xs);
+   color: #333;
+}
+
+.appointment-info, .complaint-info, .document-info, .record-info {
+   display: flex;
+   align-items: center;
+   gap: var(--spacing-sm);
+   font-size: 14px;
+}
+
+.appointment-info i, .complaint-info i {
+   width: 16px;
+   color: var(--primary-color);
+}
+
+.complaint-description, .record-notes {
+   margin-top: var(--spacing-sm);
+   font-size: 14px;
+   color: #666;
+   border-top: 1px solid var(--border-color);
+   padding-top: var(--spacing-sm);
+}
+
+/* === Section Plaintes === */
+.tab-buttons {
+   display: flex;
+   gap: var(--spacing-sm);
+   margin-bottom: var(--spacing-md);
+}
+
+.new-complaint-form, .add-record-form {
+   background-color: var(--card-color);
+   border-radius: var(--radius-md);
+   padding: var(--spacing-lg);
+   box-shadow: var(--shadow-sm);
+}
+
+.form-group {
+   margin-bottom: var(--spacing-md);
+}
+
+.form-group label {
+   display: block;
+   margin-bottom: var(--spacing-xs);
+   font-weight: 500;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+   width: 100%;
+   padding: var(--spacing-sm);
+   border-radius: var(--radius-sm);
+   border: 1px solid var(--border-color);
+   background-color: var(--background-color);
+}
+
+.form-group textarea {
+   min-height: 100px;
+   resize: vertical;
+}
+
+/* === Section Casier Judiciaire === */
+.search-box {
+   display: flex;
+   gap: var(--spacing-sm);
+   margin-bottom: var(--spacing-lg);
+}
+
+.search-box input {
+   flex: 1;
+   padding: var(--spacing-sm) var(--spacing-md);
+   border-radius: var(--radius-md);
+   border: 1px solid var(--border-color);
+   background-color: var(--background-color);
+}
+
+.search-box button {
+   padding: var(--spacing-sm) var(--spacing-md);
+   border-radius: var(--radius-md);
+   background-color: var(--primary-color);
+   color: var(--text-light);
+}
+
+.citizen-details {
+   background-color: var(--card-color);
+   border-radius: var(--radius-md);
+   padding: var(--spacing-lg);
+   box-shadow: var(--shadow-sm);
+}
+
+.citizen-header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-bottom: var(--spacing-md);
+   padding-bottom: var(--spacing-sm);
+   border-bottom: 1px solid var(--border-color);
+}
+
+.citizen-id {
+   font-size: 14px;
+   padding: var(--spacing-xs) var(--spacing-sm);
+   background-color: var(--background-color);
+   border-radius: var(--radius-sm);
+}
+
+/* Container pour le mugshot */
+.citizen-mugshot-container {
+   display: flex;
+   justify-content: center;
+   margin-bottom: var(--spacing-lg);
+}
+
+.mugshot-display {
+   width: 220px;
+   height: 280px;
+   border-radius: var(--radius-md);
+   overflow: hidden;
+   box-shadow: var(--shadow-md);
+   border: 1px solid var(--border-color);
+}
+
+.mugshot-display img {
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+}
+
+.mugshot-placeholder {
+   width: 220px;
+   height: 280px;
+   background-color: #f0f2f5;
+   border-radius: var(--radius-md);
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   gap: var(--spacing-lg);
+   border: 1px dashed #ccc;
+}
+
+.mugshot-placeholder i {
+   font-size: 48px;
+   color: #bbb;
+}
+
+.add-mugshot-btn {
+   background-color: var(--primary-color);
+   color: white;
+   padding: var(--spacing-sm) var(--spacing-md);
+   border-radius: var(--radius-sm);
+   display: flex;
+   align-items: center;
+   gap: var(--spacing-sm);
+}
+
+.add-mugshot-btn:hover {
+   background-color: var(--primary-dark);
+}
+
+/* Style pour la galerie de photos */
+.gallery-modal {
+   overflow-y: auto;
+   max-height: 60vh;
+}
+
+.gallery-grid {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+   gap: var(--spacing-md);
+}
+
+.gallery-item {
+   cursor: pointer;
+   border-radius: var(--radius-sm);
+   overflow: hidden;
+   box-shadow: var(--shadow-sm);
+   transition: var(--transition-normal);
+   background-color: var(--background-color);
+}
+
+.gallery-item:hover {
+   transform: scale(1.03);
+   box-shadow: var(--shadow-md);
+}
+
+.gallery-img-container {
+   width: 100%;
+   height: 180px;
+   overflow: hidden;
+}
+
+.gallery-img-container img {
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+}
+
+.gallery-photo-info {
+   padding: var(--spacing-xs) var(--spacing-sm);
+   font-size: 12px;
+   color: #666;
+   text-align: center;
+}
+
+.loading-spinner, .empty-gallery {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   padding: var(--spacing-xl);
+   color: #666;
+   text-align: center;
+}
+
+.loading-spinner i, .empty-gallery i {
+   font-size: 48px;
+   margin-bottom: var(--spacing-md);
+   color: var(--primary-color);
+}
+
+.empty-gallery i {
+   color: #999;
+}
+
+.citizen-info-grid {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+   gap: var(--spacing-md);
+   margin-bottom: var(--spacing-lg);
+}
+
+.info-item {
+   display: flex;
+   flex-direction: column;
+}
+
+.info-label .detail-label {
+   font-size: 12px;
+   color: #666;
+   margin-bottom: var(--spacing-xs);
+}
+
+.info-value {
+   font-weight: 500;
+   color: var(--primary-color);
+
+}
+
+.info-item.full-width {
+   grid-column: 1 / -1;
+}
+
+.tabs {
+   display: flex;
+   gap: var(--spacing-sm);
+   margin-bottom: var(--spacing-md);
+}
+
+.tabs button {
+   flex: 1;
+   padding: var(--spacing-sm);
+   background-color: var(--background-color);
+   border-radius: var(--radius-sm);
+   font-weight: 500;
+}
+
+.tabs button.active {
+   background-color: var(--primary-color);
+   color: var(--text-light);
+}
+
+.add-record-btn {
+   margin-top: var(--spacing-md);
+}
+
+.delete-btn {
+   margin-left: auto;
+   margin-top: var(--spacing-sm);
+   padding: var(--spacing-xs) var(--spacing-sm);
+   border-radius: var(--radius-sm);
+   background-color: var(--error-color);
+   color: var(--text-light);
+}
+
+/* === Section Alertes === */
+.alerts-list {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+   gap: var(--spacing-md);
+}
+
+.alert-card {
+   background-color: var(--card-color);
+   border-radius: var(--radius-md);
+   padding: var(--spacing-lg);
+   box-shadow: var(--shadow-sm);
+   cursor: pointer;
+   transition: var(--transition-normal);
+   border-left: 4px solid;
+   color: var(--primary-color); /* Texte bleu foncé */
+   font-weight: 500; /* Plus épais pour meilleure visibilité */
+
+}
+
+.alert-card:hover {
+    transform: scale(1.03);
+    box-shadow: var(--shadow-md);
+    background-color: #f8f9fa; /* Fond légèrement grisé au survol */
+}
+
+
+.alert-card.red {
+   border-left-color: var(--error-color);
+}
+
+.alert-card.yellow {
+   border-left-color: var(--warning-color);
+}
+
+.alert-card.blue {
+   border-left-color: var(--info-color);
+}
+
+.alert-card.orange {
+   border-left-color: #fd7e14;
+}
+
+.alert-code {
+   font-weight: 700;
+   font-size: 20px;
+   margin-bottom: var(--spacing-sm);
+   color: var(--primary-color);
+}
+
+.alert-label {
+    color: #333; /* Texte presque noir pour la description */
+    font-size: 16px; /* Taille légèrement augmentée */
+}
+
+/* === Modals === */
+.modal {
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   background-color: rgba(0, 0, 0, 0.5);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   z-index: 1001; /* Au-dessus de la coque */
+}
+
+.modal-content {
+   width: 90%;
+   max-width: 600px;
+   max-height: 90vh;
+   background-color: var(--card-color);
+   border-radius: var(--radius-lg);
+   box-shadow: var(--shadow-lg);
+   overflow: hidden;
+   display: flex;
+   flex-direction: column;
+   position: relative;
+   top: 10%;
+}
+
+.modal-header {
+   padding: var(--spacing-md) var(--spacing-lg);
+   background-color: var(--primary-color);
+   color: var(--text-light);
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+}
+
+.modal-header h3 {
+   font-size: 18px;
+   font-weight: 600;
+}
+
+.close-modal {
+   width: 28px;
+   height: 28px;
+   border-radius: 50%;
+   background-color: rgba(255, 255, 255, 0.1);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   color: var(--text-light);
+}
+
+.close-modal:hover {
+   background-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+   padding: var(--spacing-lg);
+   overflow-y: auto;
+   max-height: 70vh;
+}
+
+.detail-item {
+   margin-bottom: var(--spacing-md);
+}
+
+.detail-value {
+   font-weight: 500;
+   color: var(--primary-color);
+
+}
+
+.button-group {
+   display: flex;
+   gap: var(--spacing-md);
+   margin-top: var(--spacing-lg);
+}
+
+/* === Listes dans modals === */
+.uniforms-list, .accessories-list, .fines-categories {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+   gap: var(--spacing-md);
+}
+
+.uniform-item, .accessory-item, .fine-category, .license-option {
+   background-color: var(--background-color);
+   border-radius: var(--radius-md);
+   padding: var(--spacing-md);
+   display: flex;
+   align-items: center;
+   gap: var(--spacing-sm);
+   cursor: pointer;
+   transition: var(--transition-normal);
+}
+
+.uniform-item:hover, .accessory-item:hover, .fine-category:hover, .license-option:hover {
+   background-color: #e9ecef;
+}
+
+.remove-item {
+   background-color: #f8d7da;
+   color: var(--error-color);
+}
+
+.remove-item:hover {
+   background-color: #f5c6cb;
+}
+
+.fine-category {
+   flex-direction: column;
+   align-items: flex-start;
+}
+
+.category-label {
+   font-weight: 500;
+}
+
+.category-range {
+   font-size: 14px;
+   color: #666;
+}
+
+/* === Notifications === */
+.notifications-container {
+   position: fixed;
+   top: 59vh;
+   right: 450px; /* Ajusté pour être sur le côté droit de la tablette */
+   display: flex;
+   flex-direction: column;
+   gap: var(--spacing-md);
+   z-index: 1001; /* Au-dessus de la coque */
+   max-width: 350px;
+}
+
+.notification {
+   padding: var(--spacing-md);
+   border-radius: var(--radius-md);
+   background-color: var(--card-color);
+   box-shadow: var(--shadow-md);
+   display: flex;
+   align-items: flex-start;
+   gap: var(--spacing-md);
+   animation: slide-in 0.3s ease forwards;
+   border-left: 4px solid;
+}
+
+.notification.info {
+   border-left-color: var(--info-color);
+}
+
+.notification.success {
+   border-left-color: var(--success-color);
+}
+
+.notification.warning {
+   border-left-color: var(--warning-color);
+}
+
+.notification.error {
+   border-left-color: var(--error-color);
+}
+
+.notification i {
+   width: 24px;
+   height: 24px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   font-size: 18px;
+}
+
+.notification.info i {
+   color: var(--info-color);
+}
+
+.notification.success i {
+   color: var(--success-color);
+}
+
+.notification.warning i {
+   color: var(--warning-color);
+}
+
+.notification.error i {
+   color: var(--error-color);
+}
+
+.notification-content {
+   flex: 1;
+}
+
+.notification-title {
+   font-weight: 600;
+   margin-bottom: var(--spacing-xs);
+   color: var(--primary-color);
+}
+
+.notification-message {
+   font-size: 14px;
+   color: var(--primary-color);
+}
+
+.notification-close {
+   padding: 0;
+   width: 24px;
+   height: 24px;
+   border-radius: 50%;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   font-size: 12px;
+   color: #777;
+   background-color: #eee;
+}
+
+.notification-close:hover {
+   background-color: #ddd;
+}
+
+/* === Styles pour les sections véhicules === */
+.vehicle-info-container, .stolen-vehicles-container {
+   background-color: var(--card-color);
+   border-radius: var(--radius-md);
+   padding: var(--spacing-lg);
+   box-shadow: var(--shadow-sm);
+   margin-top: var(--spacing-md);
+}
+
+.vehicle-info-header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-bottom: var(--spacing-md);
+   padding-bottom: var(--spacing-sm);
+   border-bottom: 1px solid var(--border-color);
+}
+
+.vehicle-plate {
+   font-size: 14px;
+   padding: var(--spacing-xs) var(--spacing-sm);
+   background-color: var(--primary-color);
+   color: var(--text-light);
+   border-radius: var(--radius-sm);
+}
+
+.vehicle-info-grid {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+   gap: var(--spacing-md);
+   margin-bottom: var(--spacing-lg);
+}
+
+.stolen-vehicles-list {
+   display: flex;
+   flex-direction: column;
+   gap: var(--spacing-md);
+   max-height: 50vh;
+   overflow-y: auto;
+}
+
+.stolen-vehicle-card {
+   background-color: var(--card-color);
+   border-radius: var(--radius-md);
+   padding: var(--spacing-md);
+   box-shadow: var(--shadow-sm);
+   border-left: 4px solid var(--error-color);
+}
+
+.stolen-vehicle-header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-bottom: var(--spacing-sm);
+}
+
+.stolen-vehicle-model {
+   font-weight: 600;
+}
+
+.stolen-vehicle-plate {
+   font-size: 12px;
+   padding: 2px 8px;
+   background-color: var(--background-color);
+   border-radius: var(--radius-sm);
+}
+
+.stolen-vehicle-details {
+   margin-bottom: var(--spacing-md);
+}
+
+.stolen-vehicle-info {
+   display: flex;
+   align-items: center;
+   gap: var(--spacing-sm);
+   font-size: 14px;
+}
+
+.stolen-vehicle-info i {
+   width: 16px;
+   color: var(--primary-color);
+}
+
+.recover-btn {
+   margin-top: var(--spacing-sm);
+   padding: var(--spacing-xs) var(--spacing-md);
+   font-size: 12px;
+}
+
+.document-actions {
+    margin-top: var(--spacing-sm);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.document-actions .action-btn {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: 12px;
+}
+
+/* === Animations === */
+@keyframes slide-in {
+   from {
+       transform: translateX(100%);
+       opacity: 0;
+   }
+   to {
+       transform: translateX(0);
+       opacity: 1;
+   }
+}
+
+/* === Media Queries === */
+@media (max-width: 768px) {
+   .app-container {
+       width: 95vw;
+       height: 90vh;
+   }
+   
+   .action-grid, .alerts-list {
+       grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+   }
+   
+   .officer-info, .citizen-info-grid {
+       grid-template-columns: 1fr;
+   }
+   
+   .button-group {
+       flex-direction: column;
+   }
+}
+
+@media (max-width: 480px) {
+   .header-logo h1 {
+       font-size: 16px;
+   }
+   
+   .nav-item {
+       padding: var(--spacing-sm) var(--spacing-md);
+       font-size: 14px;
+   }
+   
+   .action-grid {
+       grid-template-columns: repeat(2, 1fr);
+   }
+   
+   .uniforms-list, .accessories-list, .fines-categories {
+       grid-template-columns: 1fr;
+   }
+}
